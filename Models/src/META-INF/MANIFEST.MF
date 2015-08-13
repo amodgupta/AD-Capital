@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: rabbitmq-client-tests.jar junit.jar commons-lang3-3.4.jar 
- commons-cli-1.1.jar rabbitmq-client.jar sqljdbc42.jar commons-io-1.2.
- jar
-Main-Class: com.appdynamics.loan.verification.Notary
-

@@ -1,0 +1,5 @@
+rootProject.name = "AD-Capital"
+include "Portal"
+include "Processor"
+include "Verification"
+include "Models"

@@ -6,7 +6,9 @@ import java.util.concurrent.TimeoutException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.appdynamics.loan.common.*;
+
+import com.appdynamics.loan.common.LoanApplication;
+import com.appdynamics.loan.common.UserData;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
