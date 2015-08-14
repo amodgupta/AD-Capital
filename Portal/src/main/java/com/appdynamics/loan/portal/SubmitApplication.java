@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.TimeoutException;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -17,7 +18,7 @@ import org.apache.commons.lang3.SerializationUtils;
 /**
  * Created by amod.gupta on 7/24/15.
  */
-@javax.servlet.annotation.WebServlet(name = "SubmitApplication", urlPatterns = {"/SubmitApplication"})
+@WebServlet(name = "SubmitApplication", urlPatterns = {"/SubmitApplication"})
 public class SubmitApplication extends javax.servlet.http.HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 

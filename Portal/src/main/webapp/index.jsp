@@ -8,9 +8,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
   <head>
-    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Jsp Servlet Annotation</title>
   </head>
   <body>
-
+    <div>
+     <a href="Authenticate">Click Here </a>
+     </div>
   </body>
 </html>
