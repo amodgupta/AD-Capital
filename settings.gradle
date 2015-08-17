@@ -3,3 +3,5 @@ include "Portal"
 include "Processor"
 include "Verification"
 include "Models"
+include "Rest"
+
