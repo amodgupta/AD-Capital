@@ -1,4 +1,4 @@
-package com.appdynamics.loan.verification;
+package com.appdynamics.loan.queuereader;
 
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;

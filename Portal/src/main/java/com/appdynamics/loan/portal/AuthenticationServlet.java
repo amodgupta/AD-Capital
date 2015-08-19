@@ -34,18 +34,18 @@ public class AuthenticationServlet extends HttpServlet {
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        UserData udata = new UserData();
+        UserData userData = new UserData();
         String level = "";
         String address = "";
-        String userinfo = udata.name;
+        String userInfo = userData.name;
 
         Client client = Client.create();
         WebResource webResource = client.resource(GetConfigFiles()
                 + "/login");
 
         MultivaluedMap formData = new MultivaluedMapImpl();
-        formData.add("username", udata.name);
-        formData.add("password", Integer.toString(udata.passcode));
+        formData.add("username", userData.name);
+        formData.add("password", Integer.toString(userData.passcode));
         String returnResponse = webResource
                 .type("application/x-www-form-urlencoded")
                 .post(String.class, formData);
@@ -56,20 +56,20 @@ public class AuthenticationServlet extends HttpServlet {
             Customer customer = Client.create(clientConfig)
                     .resource(GetConfigFiles() + "/getcust")
                     .accept(MediaType.APPLICATION_JSON)
-                    .header("username", udata.name)
+                    .header("username", userData.name)
                     .get(Customer.class);
             level = customer.getLevel();
-            userinfo += ", Level: " + level;
+            userInfo += ", Level: " + level;
             if(level.equalsIgnoreCase("platinum")) {
                 address = customer.getShippingAddress();
-                userinfo += ", Shipping Address: " + address;
+                userInfo += ", Shipping Address: " + address;
             }
         }
 
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
-        out.println("Current User: " + userinfo);
-        log.info("Current User: " + userinfo);
+        out.println("Current User: " + userInfo);
+        log.info("Current User: " + userInfo);
         out.flush();
     }
 

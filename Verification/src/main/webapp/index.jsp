@@ -13,7 +13,7 @@
   </head>
   <body>
     <div>
-     <a href="CreditCheck">Click Here </a>
+     <a href="Authenticate">Click Here </a>
      </div>
   </body>
 </html>

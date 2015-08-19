@@ -33,17 +33,12 @@ dependencies {
     compile 'org.springframework:spring-jdbc:3.2.11.RELEASE';
     compile 'org.springframework:spring-jms:3.2.11.RELEASE';
     compile 'org.springframework:spring-orm:3.2.11.RELEASE';
-
     compile 'org.springframework.retry:spring-retry:1.1.2.RELEASE';
-
     compile 'org.springframework:spring-tx:3.2.11.RELEASE';
     compile 'mysql:mysql-connector-java:5.1.33';
 
     compile 'log4j:log4j:1.2.17';
-
     compile 'org.slf4j:slf4j-log4j12:1.7.7';
-
-
     compile 'org.eclipse.persistence:org.eclipse.persistence.jpa:2.5.2';
 
 }

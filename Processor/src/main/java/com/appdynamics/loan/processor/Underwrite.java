@@ -1,10 +1,12 @@
 package com.appdynamics.loan.processor;
 
-import com.appdynamics.loan.common.DBData;
+import com.appdynamics.loan.model.Applications;
+import com.appdynamics.loan.service.ApplicationsService;
+import com.appdynamics.loan.util.SpringContext;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import org.apache.commons.lang3.SerializationUtils;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -13,18 +15,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.concurrent.TimeoutException;
 
 /**
  * Created by amod.gupta on 7/28/15.
  */
-@WebServlet(name = "Underwrite",urlPatterns = {"/Underwrite"})
+@WebServlet(name = "Underwrite", urlPatterns = {"/Underwrite"})
 public class Underwrite extends HttpServlet {
+
     private int customerid;
     private String applicationid;
+
+    private static final Logger log = Logger.getLogger(Underwrite.class.getName());
+
+    public static ApplicationsService getApplicationsService() {
+        return (ApplicationsService) SpringContext.getBean("applicationsService");
+    }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -33,10 +39,10 @@ public class Underwrite extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         //Get application for Underwriting
-        boolean ffound = getApplicationForUnderwriting();
+        boolean found = getApplicationForUnderwriting();
 
         String message = "No application found for underwriting";
-        if (ffound)
+        if (found)
             message = "Customer ID:" + customerid + ", your application has been sent to the underwriter";
 
         response.setContentType("text/html");
@@ -47,9 +53,9 @@ public class Underwrite extends HttpServlet {
 
     }
 
-    private boolean sendToUnderwriter() throws TimeoutException,IOException {
+    private boolean sendToUnderwriter() throws TimeoutException, IOException {
         boolean approved = true;
-        int num = (int)(Math.random()*99 + 1);
+        int num = (int) (Math.random() * 99 + 1);
         if (num < 11)
             return false;
 
@@ -57,11 +63,11 @@ public class Underwrite extends HttpServlet {
         factory.setHost("ec2-54-242-38-169.compute-1.amazonaws.com");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
-        String qname = "ApprovedAppsQueue";
+        String queueName = "ApprovedAppsQueue";
 
         // Create queue if it doesn't exist
-        channel.queueDeclare(qname, false, false, false, null);
-        channel.basicPublish("", qname, null, this.applicationid.getBytes());
+        channel.queueDeclare(queueName, false, false, false, null);
+        channel.basicPublish("", queueName, null, this.applicationid.getBytes());
 
         channel.close();
         connection.close();
@@ -69,41 +75,22 @@ public class Underwrite extends HttpServlet {
         return approved;
     }
 
-    private boolean getApplicationForUnderwriting(){
-        String getquery = "SELECT TOP 1 ApplicationID,CustomerID FROM dbo.newapplications where applicationstatus ='UW';";
-        DBData dbinfo = new DBData();
-        java.sql.Connection conn=null;
-        Statement statement=null;
-        ResultSet rs=null;
-        boolean ffound=false;
-
+    private boolean getApplicationForUnderwriting() {
+        boolean found = false;
         try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            conn = DriverManager.getConnection(dbinfo.getUrl(), dbinfo.getUser(), dbinfo.getPassword());
-
-            statement = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-            rs = statement.executeQuery(getquery);
-
-            if (rs.next() && rs.getConcurrency() == ResultSet.CONCUR_UPDATABLE){
-                ffound = true;
-                this.customerid = rs.getInt("CustomerID");
-                this.applicationid = rs.getObject(1).toString();
-
+            Applications applications = getApplicationsService().getApplicationsWithUWStatus();
+            if (applications != null) {
+                found = true;
+                this.customerid = applications.getCustomerId();
+                this.applicationid = String.valueOf(applications.getId());
                 //Send to UnderWriter
-                boolean approved = sendToUnderwriter();
-
-                rs.deleteRow();
+                sendToUnderwriter();
             }
-
         } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try { if (rs != null) rs.close(); } catch (Exception e) {};
-            try { if (statement != null) statement.close(); } catch (Exception e) {};
-            try { if (conn != null) conn.close(); } catch (Exception e) {};
+            log.error(e.getMessage());
         }
 
-        return ffound;
+        return found;
 
     }
 }

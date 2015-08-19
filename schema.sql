@@ -131,4 +131,20 @@ INSERT INTO `customer` (id,name,shippingaddress,telephone,level,email,creditscor
 UNLOCK TABLES;
 /*!40000 ALTER TABLE `customer` ENABLE KEYS */;
 
+
+--
+-- Table structure for table `applications`
+--
+
+DROP TABLE IF EXISTS `applications`;
+CREATE TABLE `applications` (
+  `applicationid` CHAR(36) NOT NULL,
+  `loantype` varchar(10) NOT NULL,
+  `amount` bigint(100) default NULL,
+  `customerid` bigint(10) default NULL,
+  `applicationstatus` varchar(10) default NULL,
+  PRIMARY KEY  (`applicationid`),
+  UNIQUE KEY `applicationid` (`applicationid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 commit;

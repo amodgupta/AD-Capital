@@ -43,4 +43,7 @@ public class CustomerService {
 	public Customer getMemberByName(String email) {
 		return customerPersistence.getMemberByName(email);
 	}
+	public Customer getMemberById(Integer id){
+		return customerPersistence.getMemberById(id);
+	}
 }

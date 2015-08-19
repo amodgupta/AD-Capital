@@ -72,7 +72,7 @@ public class SubmitApplication extends javax.servlet.http.HttpServlet {
         factory.setHost("ec2-54-242-38-169.compute-1.amazonaws.com");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
-        String qname = "NewApplications";
+        String qname = "Applications";
 
         // Create queue if it doesn't exist
         channel.queueDeclare(qname, false, false, false, null);

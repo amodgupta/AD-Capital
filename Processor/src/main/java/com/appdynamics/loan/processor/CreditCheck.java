@@ -1,12 +1,16 @@
 package com.appdynamics.loan.processor;
 
-import com.appdynamics.loan.common.*;
+import com.appdynamics.loan.model.Applications;
+import com.appdynamics.loan.model.Customer;
+import com.appdynamics.loan.service.ApplicationsService;
+import com.appdynamics.loan.service.CustomerService;
+import com.appdynamics.loan.util.SpringContext;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.io.StringWriter;
+import java.util.UUID;
 
 /**
  * Created by amod.gupta on 7/28/15.
@@ -14,139 +18,121 @@ import java.sql.Statement;
 @javax.servlet.annotation.WebServlet(name = "CreditCheck", urlPatterns = {"/CreditCheck"})
 public class CreditCheck extends javax.servlet.http.HttpServlet {
 
-    String getquery = "SELECT TOP 1 ApplicationID,CustomerID FROM dbo.newapplications where applicationstatus ='CC';";
-    String getscore = "SELECT CreditScore from dbo.customer where id=";
-    String updateapplication = "UPDATE dbo.newapplications SET applicationstatus='UW' where ApplicationID='";
-    String deleteapplication = "DELETE FROM dbo.newapplications where ApplicationID='";
-
     int customerid;
     String applicationid;
     int score;
 
+    private static final Logger log = Logger.getLogger(CreditCheck.class.getName());
 
-    protected void doPost(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
+    public static ApplicationsService getApplicationsService() {
+        return (ApplicationsService) SpringContext.getBean("applicationsService");
+    }
+
+    public CustomerService getCustomerService() {
+        return (CustomerService) SpringContext.getBean("customerService");
+    }
+
+    protected void doPost(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response)
+            throws javax.servlet.ServletException, IOException {
 
     }
 
-    protected void doGet(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response) throws javax.servlet.ServletException, IOException {
-        boolean approve = true;
-        boolean ffound;
-        String message = "No application found for credit approval";
-
-        // Get Next Application for credit processing
-        ffound = getApplicationForCreditCheck();
-
-        if (ffound){
-            // Check FICO Score
-            getFICOScore();
-
-            // Decide
-            if (score < 650)
-                approve = false;
-
-            // Update Status
-            updateApplicationStatus(approve);
-
-            message = "Customer ID:" + customerid + " FICO Score: " + score + "Approved: " + approve;
-
-        }
-
-        response.setContentType("text/html");
-        response.setHeader("Access-Control-Allow-Origin", "*");
-        PrintWriter out = response.getWriter();
-        out.println(message);
-        out.flush();
-
-    }
-
-    private boolean updateApplicationStatus(boolean approve){
-        boolean fsuccess = false;
-        int rows=0;
-        String query;
-        DBData dbinfo = new DBData();
-        java.sql.Connection conn=null;
-        Statement statement=null;
-
-
+    protected void doGet(javax.servlet.http.HttpServletRequest request, javax.servlet.http.HttpServletResponse response)
+            throws javax.servlet.ServletException, IOException {
         try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            conn = DriverManager.getConnection(dbinfo.getUrl(), dbinfo.getUser(), dbinfo.getPassword());
+            boolean approve = true;
+            boolean found;
+            String message = "No application found for credit approval";
 
-            statement = conn.createStatement();
-            if (approve)
-                query = this.updateapplication;
-            else
-                query = this.deleteapplication;
+            // Get Next Application for credit processing
+            found = getApplicationForCreditCheck();
 
-            rows = statement.executeUpdate(query+this.applicationid+"';");
+            if (found) {
+                // Check FICO Score
+                getFICOScore();
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try { if (statement != null) statement.close(); } catch (Exception e) {};
-            try { if (conn != null) conn.close(); } catch (Exception e) {};
-        }
+                // Decide
+                if (score < 650)
+                    approve = false;
 
-        if (rows == 1)
-            fsuccess = true;
-        return fsuccess;
-    }
+                // Update Status
+                updateApplicationStatus(approve);
 
-    private void getFICOScore()
-    {
-        DBData dbinfo = new DBData();
-        java.sql.Connection conn=null;
-        Statement statement=null;
-        ResultSet rs=null;
+                message = "Customer ID:" + customerid + " FICO Score: " + score + "Approved: " + approve;
 
-        try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            conn = DriverManager.getConnection(dbinfo.getUrl(), dbinfo.getUser(), dbinfo.getPassword());
-
-            statement = conn.createStatement();
-            rs = statement.executeQuery(this.getscore + this.customerid + ";");
-
-            if (rs.next())
-                this.score = rs.getInt(1);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }finally {
-            try { if (rs != null) rs.close(); } catch (Exception e) {};
-            try { if (statement != null) statement.close(); } catch (Exception e) {};
-            try { if (conn != null) conn.close(); } catch (Exception e) {};
-        }
-    }
-
-    private boolean getApplicationForCreditCheck(){
-        DBData dbinfo = new DBData();
-        java.sql.Connection conn=null;
-        Statement statement=null;
-        ResultSet rs=null;
-        boolean ffound = false;
-
-        try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            conn = DriverManager.getConnection(dbinfo.getUrl(), dbinfo.getUser(), dbinfo.getPassword());
-
-            statement = conn.createStatement();
-            rs = statement.executeQuery(getquery);
-
-            if (rs.next()){
-                ffound = true;
-                this.customerid = rs.getInt("CustomerID");
-                this.applicationid = rs.getObject(1).toString();
             }
 
+            response.setContentType("text/html");
+            response.setHeader("Access-Control-Allow-Origin", "*");
+            PrintWriter out = response.getWriter();
+            out.println(message);
+            out.flush();
         } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try { if (rs != null) rs.close(); } catch (Exception e) {};
-            try { if (statement != null) statement.close(); } catch (Exception e) {};
-            try { if (conn != null) conn.close(); } catch (Exception e) {};
+            log.error(e.getMessage());
+            StringWriter writer = new StringWriter();
+            PrintWriter pw = new PrintWriter(writer);
+            e.printStackTrace(pw);
+            log.error(writer.toString());
         }
+    }
 
-        return ffound;
+    private boolean updateApplicationStatus(boolean approve) {
+        boolean success = false;
+        int rows = 0;
+        try {
+            if (approve) {
+                rows = getApplicationsService().updateApplicationsById(this.applicationid);
+                log.info("Update Application Status: " + this.applicationid);
+            } else {
+                rows = getApplicationsService().deleteApplicationsByID(this.applicationid);
+                log.info("Delete Application Status: " + this.applicationid);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            StringWriter writer = new StringWriter();
+            PrintWriter pw = new PrintWriter(writer);
+            e.printStackTrace(pw);
+            log.error(writer.toString());
+        }
+        if (rows == 1)
+            success = true;
+        return success;
+    }
+
+    private void getFICOScore() {
+        try {
+            Customer customer = getCustomerService().getMemberById(this.customerid);
+            if (customer != null) {
+                this.score = customer.getCreditScore();
+                log.info("Credit SCore: " + this.customerid + ", " + this.score);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            StringWriter writer = new StringWriter();
+            PrintWriter pw = new PrintWriter(writer);
+            e.printStackTrace(pw);
+            log.error(writer.toString());
+        }
+    }
+
+    private boolean getApplicationForCreditCheck() {
+        boolean found = false;
+        try {
+            Applications applications = getApplicationsService().getApplicationsWithCCStatus();
+            if (applications != null) {
+                found = true;
+                this.customerid = applications.getCustomerId();
+                this.applicationid = applications.getId();
+                log.info("getApplicationForCreditCheck: " + this.customerid + ", " + this.applicationid);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            StringWriter writer = new StringWriter();
+            PrintWriter pw = new PrintWriter(writer);
+            e.printStackTrace(pw);
+            log.error(writer.toString());
+        }
+        return found;
 
     }
 

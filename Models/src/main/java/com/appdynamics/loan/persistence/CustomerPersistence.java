@@ -37,4 +37,16 @@ public class CustomerPersistence extends BasePersistenceImpl {
         List<Customer> memberList = (List<Customer>) q.getResultList();
         return ((memberList == null || memberList.size() == 0) ? null : memberList.get(0));
     }
+
+    /**
+     * Get Customer by id
+     * @param id
+     * @return
+     */
+    public Customer getMemberById(Integer id) {
+        Query q = getEntityManager().createQuery("SELECT c from Customer c WHERE c.id=:id");
+        q.setParameter("id", id);
+        List<Customer> memberList = (List<Customer>) q.getResultList();
+        return ((memberList == null || memberList.size() == 0) ? null : memberList.get(0));
+    }
 }

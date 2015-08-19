@@ -12,8 +12,5 @@
     <title>Jsp Servlet Annotation</title>
   </head>
   <body>
-    <div>
-     <a href="CreditCheck">Click Here </a>
-     </div>
   </body>
 </html>

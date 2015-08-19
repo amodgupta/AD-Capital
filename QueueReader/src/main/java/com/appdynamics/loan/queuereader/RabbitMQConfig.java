@@ -1,4 +1,4 @@
-package com.appdynamics.loan.verification;
+package com.appdynamics.loan.queuereader;
 
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -14,9 +14,9 @@ import org.springframework.amqp.core.Queue;
  * Created by amod.gupta on 7/30/15.
  */
 @Configuration
-@ComponentScan("com.appdynamics.loan.verification")
+@ComponentScan("com.appdynamics.loan.queuereader")
 public class RabbitMQConfig {
-    private static final String QNAME = "Applications";
+    private static final String QNAME = "ApprovedAppsQueue";
 
     @Bean
     public ConnectionFactory connectionFactory() {

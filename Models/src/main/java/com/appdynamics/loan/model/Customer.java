@@ -28,7 +28,7 @@ public class Customer implements java.io.Serializable {
     @Column(name = "email")
     private String email = null;
     @Column(name = "creditscore")
-    private String creditScore = null;
+    private Integer creditScore = null;
 
     /**
      * Getter and Setter of id
@@ -88,11 +88,11 @@ public class Customer implements java.io.Serializable {
     /**
      * Getter and Setter of creditScore
      */
-    public String getCreditScore() {
+    public Integer getCreditScore() {
         return creditScore;
     }
 
-    public void setCreditScore(String creditScore) {
+    public void setCreditScore(Integer creditScore) {
         this.creditScore = creditScore;
     }
 }

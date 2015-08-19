@@ -4,4 +4,5 @@ include "Processor"
 include "Verification"
 include "Models"
 include "Rest"
+include "QueueReader"
 
