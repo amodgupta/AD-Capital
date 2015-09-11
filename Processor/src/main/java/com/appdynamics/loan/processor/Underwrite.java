@@ -6,6 +6,7 @@ import com.appdynamics.loan.util.SpringContext;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.ServletException;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -60,17 +62,25 @@ public class Underwrite extends HttpServlet {
             return false;
 
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("ec2-54-242-38-169.compute-1.amazonaws.com");
-        Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
-        String queueName = "ApprovedAppsQueue";
+        try {
 
-        // Create queue if it doesn't exist
-        channel.queueDeclare(queueName, false, false, false, null);
-        channel.basicPublish("", queueName, null, this.applicationid.getBytes());
+            URI uri = new URI(GetRabbitMQURLFromConfigFiles());
+            factory.setUri(uri);
 
-        channel.close();
-        connection.close();
+            Connection connection = factory.newConnection();
+            Channel channel = connection.createChannel();
+            String queueName = "ApprovedAppsQueue";
+
+            // Create queue if it doesn't exist
+            channel.queueDeclare(queueName, false, false, false, null);
+            channel.basicPublish("", queueName, null, this.applicationid.getBytes());
+            log.info(" [x] Sent '" + this.applicationid + "'");
+
+            channel.close();
+            connection.close();
+        } catch (Exception ex) {
+            log.error("Error Submitting Application" + ex.getMessage());
+        }
 
         return approved;
     }
@@ -92,5 +102,16 @@ public class Underwrite extends HttpServlet {
 
         return found;
 
+    }
+
+    private String GetRabbitMQURLFromConfigFiles() {
+        GetConfigProperties properties = new GetConfigProperties();
+        try {
+            return properties.getRabbitMQUrl();
+        } catch (IOException ex) {
+            // TODO Auto-generated catch block
+            log.error(ex.getMessage());
+        }
+        return null;
     }
 }

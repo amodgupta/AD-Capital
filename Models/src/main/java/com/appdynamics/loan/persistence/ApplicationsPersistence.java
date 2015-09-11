@@ -23,8 +23,6 @@ public class ApplicationsPersistence extends BasePersistenceImpl {
      */
     public Applications getApplicationsWithCCStatus() {
         Query q = getEntityManager().createQuery("SELECT a from Applications a WHERE a.applicationStatus = 'CC'");
-        Applications applications = (Applications)q.getSingleResult();
-        log.info(applications.getId());
         List<Applications> applicationsList = (List<Applications>) q.getResultList();
         return ((applicationsList == null || applicationsList.size() == 0) ? null : applicationsList.get(0));
     }

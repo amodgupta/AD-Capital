@@ -1,45 +1,64 @@
 package com.appdynamics.loan.queuereader;
 
-import org.springframework.amqp.core.AcknowledgeMode;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.amqp.core.Queue;
+import com.rabbitmq.client.*;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Properties;
 
 
 /**
  * Created by amod.gupta on 7/30/15.
  */
-@Configuration
-@ComponentScan("com.appdynamics.loan.queuereader")
 public class RabbitMQConfig {
-    private static final String QNAME = "ApprovedAppsQueue";
+    private static final String QUEUE_NAME = "ApprovedAppsQueue";
 
-    @Bean
-    public ConnectionFactory connectionFactory() {
-        CachingConnectionFactory connectionFactory = new CachingConnectionFactory("ec2-54-242-38-169.compute-1.amazonaws.com");
-        connectionFactory.setUsername("guest");
-        connectionFactory.setPassword("guest");
-        connectionFactory.setRequestedHeartBeat(30);
-        return connectionFactory;
-    }
+    public static void main(String[] argv) throws Exception {
 
-    @Bean
-    public Queue simpleQueue() {
-        return new Queue(QNAME);
-    }
+        try {
+            while (true) {
+                Properties prop = new Properties();
+                String propFileName = "config.properties";
+                InputStream inputStream = RabbitMQConfig.class.getResourceAsStream(propFileName);
+                ConnectionFactory factory = new ConnectionFactory();
 
-    @Bean
-    public SimpleMessageListenerContainer listenerContainer() {
-        SimpleMessageListenerContainer listenerContainer = new SimpleMessageListenerContainer();
-        listenerContainer.setConnectionFactory(connectionFactory());
-        listenerContainer.setQueues(simpleQueue());
-        listenerContainer.setMessageListener(new Consumer());
-        listenerContainer.setAcknowledgeMode(AcknowledgeMode.AUTO);
-        return listenerContainer;
+                if (inputStream != null) {
+                    prop.load(inputStream);
+                } else {
+                    System.out.println("property file '" + propFileName + "' not found in the classpath");
+                }
+
+                String mqUrl = prop.getProperty("mqurl");
+
+                System.out.println(mqUrl);
+                URI uri = new URI(mqUrl);
+                factory.setUri(uri);
+
+                com.rabbitmq.client.Connection connection = factory.newConnection();
+                Channel channel = connection.createChannel();
+
+                channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+
+                Consumer consumer = new DefaultConsumer(channel) {
+                    @Override
+                    public void handleDelivery(String consumerTag, Envelope envelope,
+                                               AMQP.BasicProperties properties, byte[] body) throws IOException {
+
+                        String message = new String(body, "UTF-8");
+                        System.out.println(" [x] Received '" + message + "'");
+                    }
+                };
+                channel.basicConsume(QUEUE_NAME, true, consumer);
+                try {
+                    Thread.sleep(3 * 1000);
+                } catch (InterruptedException ie) {
+                    System.out.println(ie.getMessage());
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
     }
 
 }

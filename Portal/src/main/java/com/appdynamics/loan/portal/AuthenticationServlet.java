@@ -40,7 +40,7 @@ public class AuthenticationServlet extends HttpServlet {
         String userInfo = userData.name;
 
         Client client = Client.create();
-        WebResource webResource = client.resource(GetConfigFiles()
+        WebResource webResource = client.resource(GetOrderURLFromConfigFiles()
                 + "/login");
 
         MultivaluedMap formData = new MultivaluedMapImpl();
@@ -54,7 +54,7 @@ public class AuthenticationServlet extends HttpServlet {
             clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING,
                     Boolean.TRUE);
             Customer customer = Client.create(clientConfig)
-                    .resource(GetConfigFiles() + "/getcust")
+                    .resource(GetOrderURLFromConfigFiles() + "/getcust")
                     .accept(MediaType.APPLICATION_JSON)
                     .header("username", userData.name)
                     .get(Customer.class);
@@ -73,7 +73,7 @@ public class AuthenticationServlet extends HttpServlet {
         out.flush();
     }
 
-    private String GetConfigFiles() {
+    private String GetOrderURLFromConfigFiles() {
         GetConfigProperties properties = new GetConfigProperties();
         try {
             return properties.getOrderUrl();

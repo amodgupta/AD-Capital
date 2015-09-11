@@ -1,10 +1,4 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: amod.gupta
-  Date: 7/24/15
-  Time: 7:39 PM
-  To change this template use File | Settings | File Templates.
---%>
+
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
   <head>
@@ -13,7 +7,8 @@
   </head>
   <body>
     <div>
-     <a href="CreditCheck">Click Here </a>
+     <a href="CreditCheck">CreditCheck </a>
+      <a href="Underwrite">Underwrite </a>
      </div>
   </body>
 </html>
