@@ -95,6 +95,8 @@ public class Underwrite extends HttpServlet {
                 this.applicationid = String.valueOf(applications.getId());
                 //Send to UnderWriter
                 sendToUnderwriter();
+            } else {
+                log.info("Application no found - UnderWrite");
             }
         } catch (Exception e) {
             log.error(e.getMessage());

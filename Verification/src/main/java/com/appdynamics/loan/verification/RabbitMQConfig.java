@@ -14,6 +14,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Properties;
+import org.apache.log4j.Logger;
 
 
 /**
@@ -21,6 +22,8 @@ import java.util.Properties;
  */
 public class RabbitMQConfig {
     private static final String QUEUE_NAME = "Applications";
+
+    private static final Logger log = Logger.getLogger(RabbitMQConfig.class.getName());
 
     public static void main(String[] argv) throws Exception {
 
@@ -37,7 +40,7 @@ public class RabbitMQConfig {
                 }
 
                 String mqUrl = prop.getProperty("mqurl");
-                System.out.println(mqUrl);
+                log.info(mqUrl);
                 URI uri = new URI(mqUrl);
                 factory.setUri(uri);
 
@@ -52,7 +55,7 @@ public class RabbitMQConfig {
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
 
                         String message = new String(body, "UTF-8");
-                        System.out.println(" [x] Received '" + message + "'");
+                        log.info(" [x] Received '" + message + "'");
 
                         LoanApplication loanApplication = null;
                         Connection connection = null;
@@ -61,7 +64,7 @@ public class RabbitMQConfig {
                         try {
                             loanApplication = SerializationUtils.deserialize(body);
                         } catch (IllegalArgumentException | SerializationException e) {
-                            System.out.println(e.getMessage());
+                            log.info(e.getMessage());
                         }
 
                         if (loanApplication != null) {
@@ -74,10 +77,10 @@ public class RabbitMQConfig {
                                 ex.printStackTrace();
                             }
 
-                            if (sleepDuration < 300)
+                            if (sleepDuration < 1500)
                                 verified = false;
 
-                            System.out.println("Verification: " + verified + " " + loanApplication.getApplicantName());
+                            log.info("Verification: " + verified + " " + loanApplication.getApplicantName());
                         }
 
                         if (verified) {
@@ -102,13 +105,16 @@ public class RabbitMQConfig {
                                     connection = DriverManager.getConnection(dbUrl, username,
                                             password);
                                 } catch (ClassNotFoundException e) {
-                                    System.out.println(e.getMessage());
+                                    log.error(e.getMessage());
                                 } catch (SQLException e) {
-                                    System.out.println(e.getMessage());
+                                    log.error(e.getMessage());
                                 }
 
                                 String query = " insert into applications (applicationid, loantype, amount, customerid, applicationstatus)"
                                         + " values (?, ?, ?, ?, ?)";
+
+                                log.info("Application ID: " + loanApplication.getApplicantId() + "Loan Type: " + loanApplication.getLoanType()
+                                        + "Loan Amount: " + loanApplication.getLoanAmount());
 
                                 // create the mysql insert preparedstatement
                                 PreparedStatement preparedStmt = connection.prepareStatement(query);
@@ -123,7 +129,7 @@ public class RabbitMQConfig {
 
                                 connection.close();
                             } catch (Exception ex) {
-                                System.out.println(ex.getMessage());
+                                log.error(ex.getMessage());
                             }
                         }
                     }
@@ -132,11 +138,11 @@ public class RabbitMQConfig {
                 try {
                     Thread.sleep(3 * 1000);
                 } catch (InterruptedException ie) {
-                    System.out.println(ie.getMessage());
+                    log.error(ie.getMessage());
                 }
             }
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            log.error(ex.getMessage());
         }
     }
 

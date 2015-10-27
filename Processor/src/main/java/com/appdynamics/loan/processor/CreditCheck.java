@@ -105,6 +105,8 @@ public class CreditCheck extends javax.servlet.http.HttpServlet {
             if (customer != null) {
                 this.score = customer.getCreditScore();
                 log.info("Credit SCore: " + this.customerid + ", " + this.score);
+            } else {
+                log.info("No application found");
             }
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -124,6 +126,8 @@ public class CreditCheck extends javax.servlet.http.HttpServlet {
                 this.customerid = applications.getCustomerId();
                 this.applicationid = applications.getId();
                 log.info("getApplicationForCreditCheck: " + this.customerid + ", " + this.applicationid);
+            } else {
+                log.info("No application found");
             }
         } catch (Exception e) {
             log.error(e.getMessage());

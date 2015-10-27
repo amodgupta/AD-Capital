@@ -39,6 +39,8 @@ public class AuthenticationServlet extends HttpServlet {
         String address = "";
         String userInfo = userData.name;
 
+        log.info("UserName : " + userData.name);
+
         Client client = Client.create();
         WebResource webResource = client.resource(GetOrderURLFromConfigFiles()
                 + "/login");
@@ -49,6 +51,7 @@ public class AuthenticationServlet extends HttpServlet {
         String returnResponse = webResource
                 .type("application/x-www-form-urlencoded")
                 .post(String.class, formData);
+        log.info("UserName : " + userData.name + " ,PassCode: " + userData.passcode);
         if(returnResponse.equalsIgnoreCase("success")){
             ClientConfig clientConfig = new DefaultClientConfig();
             clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING,
@@ -58,6 +61,7 @@ public class AuthenticationServlet extends HttpServlet {
                     .accept(MediaType.APPLICATION_JSON)
                     .header("username", userData.name)
                     .get(Customer.class);
+            log.info("Name : " + customer.getName() + "Level : " + customer.getLevel() + "Address : " + customer.getShippingAddress() + "CreditSCore : " + customer.getCreditScore() + "ID : " + customer.getId());
             level = customer.getLevel();
             userInfo += ", Level: " + level;
             if(level.equalsIgnoreCase("platinum")) {
