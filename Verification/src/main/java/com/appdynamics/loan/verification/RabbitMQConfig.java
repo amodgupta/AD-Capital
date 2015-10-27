@@ -14,7 +14,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.apache.log4j.Logger;
 
 
 /**
@@ -22,8 +21,6 @@ import org.apache.log4j.Logger;
  */
 public class RabbitMQConfig {
     private static final String QUEUE_NAME = "Applications";
-
-    private static final Logger log = Logger.getLogger(RabbitMQConfig.class.getName());
 
     public static void main(String[] argv) throws Exception {
 
@@ -40,7 +37,7 @@ public class RabbitMQConfig {
                 }
 
                 String mqUrl = prop.getProperty("mqurl");
-                log.info(mqUrl);
+                System.out.println(mqUrl);
                 URI uri = new URI(mqUrl);
                 factory.setUri(uri);
 
@@ -55,7 +52,7 @@ public class RabbitMQConfig {
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
 
                         String message = new String(body, "UTF-8");
-                        log.info(" [x] Received '" + message + "'");
+                        System.out.println(" [x] Received '" + message + "'");
 
                         LoanApplication loanApplication = null;
                         Connection connection = null;
@@ -64,7 +61,7 @@ public class RabbitMQConfig {
                         try {
                             loanApplication = SerializationUtils.deserialize(body);
                         } catch (IllegalArgumentException | SerializationException e) {
-                            log.info(e.getMessage());
+                            System.out.println(e.getMessage());
                         }
 
                         if (loanApplication != null) {
@@ -80,7 +77,7 @@ public class RabbitMQConfig {
                             if (sleepDuration < 1500)
                                 verified = false;
 
-                            log.info("Verification: " + verified + " " + loanApplication.getApplicantName());
+                            System.out.println("Verification: " + verified + " " + loanApplication.getApplicantName());
                         }
 
                         if (verified) {
@@ -105,15 +102,15 @@ public class RabbitMQConfig {
                                     connection = DriverManager.getConnection(dbUrl, username,
                                             password);
                                 } catch (ClassNotFoundException e) {
-                                    log.error(e.getMessage());
+                                    System.out.println(e.getMessage());
                                 } catch (SQLException e) {
-                                    log.error(e.getMessage());
+                                    System.out.println(e.getMessage());
                                 }
 
                                 String query = " insert into applications (applicationid, loantype, amount, customerid, applicationstatus)"
                                         + " values (?, ?, ?, ?, ?)";
 
-                                log.info("Application ID: " + loanApplication.getApplicantId() + "Loan Type: " + loanApplication.getLoanType()
+                                System.out.println("Application ID: " + loanApplication.getApplicantId() + "Loan Type: " + loanApplication.getLoanType()
                                         + "Loan Amount: " + loanApplication.getLoanAmount());
 
                                 // create the mysql insert preparedstatement
@@ -129,7 +126,7 @@ public class RabbitMQConfig {
 
                                 connection.close();
                             } catch (Exception ex) {
-                                log.error(ex.getMessage());
+                                System.out.println(ex.getMessage());
                             }
                         }
                     }
@@ -138,11 +135,11 @@ public class RabbitMQConfig {
                 try {
                     Thread.sleep(3 * 1000);
                 } catch (InterruptedException ie) {
-                    log.error(ie.getMessage());
+                    System.out.println(ie.getMessage());
                 }
             }
         } catch (Exception ex) {
-            log.error(ex.getMessage());
+            System.out.println(ex.getMessage());
         }
     }
 
