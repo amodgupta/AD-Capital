@@ -65,6 +65,8 @@ public class CreditCheck extends javax.servlet.http.HttpServlet {
             response.setContentType("text/html");
             response.setHeader("Access-Control-Allow-Origin", "*");
             PrintWriter out = response.getWriter();
+            log.info("Credit Check: " + message);
+
             out.println(message);
             out.flush();
         } catch (Exception e) {
@@ -82,10 +84,10 @@ public class CreditCheck extends javax.servlet.http.HttpServlet {
         try {
             if (approve) {
                 rows = getApplicationsService().updateApplicationsById(this.applicationid);
-                log.info("Update Application Status: " + this.applicationid);
+                log.info("Update Application Status for the application ID: " + this.applicationid);
             } else {
                 rows = getApplicationsService().deleteApplicationsByID(this.applicationid);
-                log.info("Delete Application Status: " + this.applicationid);
+                log.info("Delete Application Status for the application ID: " + this.applicationid);
             }
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -104,9 +106,9 @@ public class CreditCheck extends javax.servlet.http.HttpServlet {
             Customer customer = getCustomerService().getMemberById(this.customerid);
             if (customer != null) {
                 this.score = customer.getCreditScore();
-                log.info("Credit SCore: " + this.customerid + ", " + this.score);
+                log.info("Credit SCore: " + this.score);
             } else {
-                log.info("No application found");
+                log.info("No Customer found for the ID " + this.customerid);
             }
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -125,9 +127,9 @@ public class CreditCheck extends javax.servlet.http.HttpServlet {
                 found = true;
                 this.customerid = applications.getCustomerId();
                 this.applicationid = applications.getId();
-                log.info("getApplicationForCreditCheck: " + this.customerid + ", " + this.applicationid);
+                log.info("getApplicationForCreditCheck for Customer ID: " + this.customerid + " and Application ID:  " + this.applicationid);
             } else {
-                log.info("No application found");
+                log.info("No application found for Customer ID: " + this.customerid + " and Application ID:  " + this.applicationid);
             }
         } catch (Exception e) {
             log.error(e.getMessage());

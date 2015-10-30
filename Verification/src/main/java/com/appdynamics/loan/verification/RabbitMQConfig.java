@@ -25,22 +25,37 @@ public class RabbitMQConfig {
     public static void main(String[] argv) throws Exception {
 
         try {
+
+            Properties prop = new Properties();
+            String propFileName = "config.properties";
+            InputStream inputStream = RabbitMQConfig.class.getResourceAsStream(propFileName);
+            ConnectionFactory factory = new ConnectionFactory();
+            if (inputStream != null) {
+                prop.load(inputStream);
+            } else {
+                throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
+            }
+
+            String mqUrl = prop.getProperty("mqurl");
+            System.out.println(mqUrl);
+            URI uri = new URI(mqUrl);
+            factory.setUri(uri);
+
+            Properties dataBaseProperties = new Properties();
+
+            InputStream dbInputStream = RabbitMQConfig.class.getResourceAsStream("database.properties");
+            if (dbInputStream != null) {
+                dataBaseProperties.load(dbInputStream);
+            } else {
+                throw new FileNotFoundException("property file 'database.properties' not found in the classpath");
+            }
+
+            final String driver = dataBaseProperties.getProperty("mysqlDriver");
+            final String dbUrl = dataBaseProperties.getProperty("mysqlUrl");
+            final String username = dataBaseProperties.getProperty("mysqlUsername");
+            final String password = dataBaseProperties.getProperty("mysqlPassword");
+
             while (true) {
-                Properties prop = new Properties();
-                String propFileName = "config.properties";
-                InputStream inputStream = RabbitMQConfig.class.getResourceAsStream(propFileName);
-                ConnectionFactory factory = new ConnectionFactory();
-                if (inputStream != null) {
-                    prop.load(inputStream);
-                } else {
-                    throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
-                }
-
-                String mqUrl = prop.getProperty("mqurl");
-                System.out.println(mqUrl);
-                URI uri = new URI(mqUrl);
-                factory.setUri(uri);
-
                 com.rabbitmq.client.Connection connection = factory.newConnection();
                 Channel channel = connection.createChannel();
 
@@ -50,10 +65,6 @@ public class RabbitMQConfig {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
-
-                        String message = new String(body, "UTF-8");
-                        System.out.println(" [x] Received '" + message + "'");
-
                         LoanApplication loanApplication = null;
                         Connection connection = null;
                         boolean verified = true;
@@ -65,39 +76,24 @@ public class RabbitMQConfig {
                         }
 
                         if (loanApplication != null) {
-
                             int sleepDuration = (int) (Math.random() * 2999 + 1);
-
                             try {
                                 Thread.sleep(sleepDuration);
                             } catch (InterruptedException ex) {
                                 ex.printStackTrace();
                             }
-
-                            if (sleepDuration < 1500)
+                            if (sleepDuration < 700)
                                 verified = false;
 
-                            System.out.println("Verification: " + verified + " " + loanApplication.getApplicantName());
                         }
 
-                        if (verified) {
+                        System.out.println("Verified Status : " + verified);
+                        boolean check = checkIfVerified(verified);
+                        System.out.println("Verified Status : " + check);
+
+                        if (check) {
                             try {
-                                Properties dataBaseProperties = new Properties();
-
-                                InputStream inputStream = RabbitMQConfig.class.getResourceAsStream("database.properties");
-                                if (inputStream != null) {
-                                    dataBaseProperties.load(inputStream);
-                                } else {
-                                    throw new FileNotFoundException("property file 'database.properties' not found in the classpath");
-                                }
-
-                                String driver = dataBaseProperties.getProperty("mysqlDriver");
-                                String dbUrl = dataBaseProperties.getProperty("mysqlUrl");
-                                String username = dataBaseProperties.getProperty("mysqlUsername");
-                                String password = dataBaseProperties.getProperty("mysqlPassword");
-
                                 try {
-
                                     Class.forName(driver);
                                     connection = DriverManager.getConnection(dbUrl, username,
                                             password);
@@ -137,10 +133,15 @@ public class RabbitMQConfig {
                 } catch (InterruptedException ie) {
                     System.out.println(ie.getMessage());
                 }
+                connection.close();
             }
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
+    }
+
+    private static boolean checkIfVerified(boolean status){
+        return status;
     }
 
 }

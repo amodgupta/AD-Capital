@@ -17,24 +17,23 @@ public class RabbitMQConfig {
     public static void main(String[] argv) throws Exception {
 
         try {
+            Properties prop = new Properties();
+            String propFileName = "config.properties";
+            InputStream inputStream = RabbitMQConfig.class.getResourceAsStream(propFileName);
+            ConnectionFactory factory = new ConnectionFactory();
+
+            if (inputStream != null) {
+                prop.load(inputStream);
+            } else {
+                System.out.println("property file '" + propFileName + "' not found in the classpath");
+            }
+
+            String mqUrl = prop.getProperty("mqurl");
+
+            System.out.println(mqUrl);
+            URI uri = new URI(mqUrl);
+            factory.setUri(uri);
             while (true) {
-                Properties prop = new Properties();
-                String propFileName = "config.properties";
-                InputStream inputStream = RabbitMQConfig.class.getResourceAsStream(propFileName);
-                ConnectionFactory factory = new ConnectionFactory();
-
-                if (inputStream != null) {
-                    prop.load(inputStream);
-                } else {
-                    System.out.println("property file '" + propFileName + "' not found in the classpath");
-                }
-
-                String mqUrl = prop.getProperty("mqurl");
-
-                System.out.println(mqUrl);
-                URI uri = new URI(mqUrl);
-                factory.setUri(uri);
-
                 com.rabbitmq.client.Connection connection = factory.newConnection();
                 Channel channel = connection.createChannel();
 
@@ -51,10 +50,11 @@ public class RabbitMQConfig {
                 };
                 channel.basicConsume(QUEUE_NAME, true, consumer);
                 try {
-                    Thread.sleep(3 * 1000);
+                    Thread.sleep(5 * 1000);
                 } catch (InterruptedException ie) {
                     System.out.println(ie.getMessage());
                 }
+                connection.close();
             }
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
