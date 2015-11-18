@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.util.Calendar;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -80,7 +81,12 @@ public class SubmitApplication extends javax.servlet.http.HttpServlet {
         ConnectionFactory factory = new ConnectionFactory();
         try {
 
-            URI uri = new URI(GetRabbitMQURLFromConfigFiles());
+            String str_uri = "ec25-55-242-38-169.compute-1.amazonaws.com";
+
+            if(!generateErrors())
+                str_uri = GetRabbitMQURLFromConfigFiles();
+
+            URI uri = new URI(str_uri);
             factory.setUri(uri);
             //factory.setHost("ec2-54-242-38-169.compute-1.amazonaws.com");
 
@@ -100,6 +106,21 @@ public class SubmitApplication extends javax.servlet.http.HttpServlet {
             log.error("Error Submitting Application" + ex.getMessage());
         }
 
+    }
+
+    private boolean generateErrors()
+    {
+        boolean flag = false;
+        Calendar calendar = Calendar.getInstance();
+        int minutes = calendar.get(calendar.MINUTE);
+
+        if (minutes <= 7)
+            flag = true;
+
+        if (minutes >= 40 && minutes <=47)
+            flag = true;
+
+        return flag;
     }
 
     private String generateLoanType() {

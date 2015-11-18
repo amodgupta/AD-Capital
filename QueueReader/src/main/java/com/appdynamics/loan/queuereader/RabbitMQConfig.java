@@ -44,7 +44,8 @@ public class RabbitMQConfig {
                     public void handleDelivery(String consumerTag, Envelope envelope,
                                                AMQP.BasicProperties properties, byte[] body) throws IOException {
 
-                        String message = new String(body, "UTF-8");
+                        String message = new String(body, "UTF-8").toLowerCase();
+                        dowork(message);
                         System.out.println(" [x] Received '" + message + "'");
                     }
                 };
@@ -59,6 +60,24 @@ public class RabbitMQConfig {
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
+    }
+
+    private static void dowork(String applicationid)
+    {
+        int sleepduration = (int)(Math.random()*1999 + 1);
+
+        try {
+            Thread.sleep(sleepduration);
+        }catch(InterruptedException ex){
+            ex.printStackTrace();
+        }
+
+        /*
+        if (sleepduration < 300)
+            verified = false;
+        */
+
+        System.out.println("Application ID: " + applicationid + " has been approved by AD Capital");
     }
 
 }

@@ -44,8 +44,16 @@ public class Underwrite extends HttpServlet {
         boolean found = getApplicationForUnderwriting();
 
         String message = "No application found for underwriting";
-        if (found)
+        if (found) {
             message = "Customer ID:" + customerid + ", your application has been sent to the underwriter";
+            int num = (int)(Math.random()*99 + 1);
+            if (num > 10)
+                try {
+                    sendToUnderwriter(this.applicationid);
+                } catch (TimeoutException e) {
+                    e.printStackTrace();
+                }
+        }
 
         response.setContentType("text/html");
         response.setHeader("Access-Control-Allow-Origin", "*");
@@ -55,11 +63,11 @@ public class Underwrite extends HttpServlet {
 
     }
 
-    private boolean sendToUnderwriter() throws TimeoutException, IOException {
+    private boolean sendToUnderwriter(String applicationid) throws TimeoutException, IOException {
         boolean approved = true;
-        int num = (int) (Math.random() * 99 + 1);
-        if (num < 11)
-            return false;
+//        int num = (int) (Math.random() * 99 + 1);
+//        if (num < 11)
+//            return false;
 
         ConnectionFactory factory = new ConnectionFactory();
         try {
@@ -73,8 +81,8 @@ public class Underwrite extends HttpServlet {
 
             // Create queue if it doesn't exist
             channel.queueDeclare(queueName, false, false, false, null);
-            channel.basicPublish("", queueName, null, this.applicationid.getBytes());
-            log.info(" [x] Sent '" + this.applicationid + "'");
+            channel.basicPublish("", queueName, null, applicationid.getBytes());
+            log.info(" [x] Sent '" + applicationid + "'");
 
             channel.close();
             connection.close();
@@ -92,9 +100,9 @@ public class Underwrite extends HttpServlet {
             if (applications != null) {
                 found = true;
                 this.customerid = applications.getCustomerId();
-                this.applicationid = String.valueOf(applications.getId());
+                this.applicationid = String.valueOf(applications.getId().toLowerCase());
                 //Send to UnderWriter
-                sendToUnderwriter();
+                //sendToUnderwriter();
             } else {
                 log.info("Application no found - UnderWrite");
             }

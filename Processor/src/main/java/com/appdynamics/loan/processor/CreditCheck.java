@@ -126,7 +126,7 @@ public class CreditCheck extends javax.servlet.http.HttpServlet {
             if (applications != null) {
                 found = true;
                 this.customerid = applications.getCustomerId();
-                this.applicationid = applications.getId();
+                this.applicationid = applications.getId().toLowerCase();
                 log.info("getApplicationForCreditCheck for Customer ID: " + this.customerid + " and Application ID:  " + this.applicationid);
             } else {
                 log.info("No application found for Customer ID: " + this.customerid + " and Application ID:  " + this.applicationid);
