@@ -10,3 +10,5 @@ Appdynamics Transaction Analytics demo with docker support
 5. Run with: `docker run --name adcapital -d --link db:db --link jms:jms -e CONTROLLER_HOST=<host> -e CONTROLLER_PORT=<port> -e CONTROLLER_USER=<user> -e CONTROLLER_PWD=<pwd> -e ACCOUNT_NAME=<account> -e ACCOUNT_ACCESS_KEY=<key> appdynamics/adcapital-demo` 
 6. See [env.sh](https://github.com/Appdynamics/AD-Capital/blob/master/env.sh) for details of environment variables
 7. To start Analytics Agent: `docker exec -it adcapital start-analytics <events-service-endpoint>` where `<events-service-endpoint>` is `host:port`
+
+
